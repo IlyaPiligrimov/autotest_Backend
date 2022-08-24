@@ -13,7 +13,7 @@ public abstract class AbstractTest {
 
     @BeforeAll
     static void initTest() throws IOException{
-      configFile = new FileInputStream("\\resources\\my.properties");
+      configFile = new FileInputStream("C:\\java\\autotest\\backend\\3\\src\\main\\resources\\my.properties");
       prop.load(configFile);
       apiKey = prop.getProperty("apiKey");
       baseUrl = prop.getProperty("baseUrl");
