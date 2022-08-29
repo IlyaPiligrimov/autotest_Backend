@@ -1,52 +1,74 @@
 import io.restassured.RestAssured;
+import io.restassured.builder.RequestSpecBuilder;
+import io.restassured.builder.ResponseSpecBuilder;
+import io.restassured.filter.log.LogDetail;
+import io.restassured.http.ContentType;
+import io.restassured.response.Response;
+import io.restassured.specification.RequestSpecification;
+import io.restassured.specification.ResponseSpecification;
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.Matchers.lessThan;
-
-
-
-
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 
 
 public class HomeWorkTest extends AbstractTest {
     String complex = "recipes/complexSearch";
     String cuisine = "recipes/cuisine";
+
+
     @BeforeAll
     static void setUp(){
 
-        RestAssured.enableLoggingOfRequestAndResponseIfValidationFails();
-
     }
+
+
+
+
+    @Test
+    void getRecipePositiveTest() {
+        RestAssured.responseSpecification = responseSpecification;
+        given()
+                .spec(requestSpecification)
+                .when()
+                .get("https://api.spoonacular.com/recipes/716429/information")
+                .then()
+                .spec(responseSpecification);
+    }
+
+
+
+
 
     @Test
     void getExcludeCuisine(){
 
         given()
-                .queryParam("apiKey", getApiKey())
+                .spec(requestSpecification)
                 .queryParam("excludeCuisine", "Thai")
                 .when()
                 .get(getBaseUrl() + complex)
                 .then()
-                .statusCode(200);
+                .spec(responseSpecification);
 
     }
     @Test
     void getType(){
 
         given()
-                .queryParam("apiKey", getApiKey())
+                .spec(requestSpecification)
                 .queryParam("type", "marinade")
                 .when()
                 .get(getBaseUrl() + complex)
                 .then()
-                .statusLine("HTTP/1.1 200 OK")
-                .header("Connection", "keep-alive")
-                .time(lessThan(2000L));
+                .spec(responseSpecification);
 
     }
 
@@ -54,8 +76,7 @@ public class HomeWorkTest extends AbstractTest {
     void getRecieptInfo(){
 
         given()
-                .queryParam("apiKey", getApiKey())
-                .queryParam("includeNutrition", "false")
+                .spec(requestSpecification)
                 .expect()
                 .body("vegetarian", is(false))
                 .body("vegan", is(false))
@@ -63,41 +84,43 @@ public class HomeWorkTest extends AbstractTest {
                 .body("pricePerServing", equalTo(163.15F))
                 .body("extendedIngredients[0].aisle", equalTo("Milk, Eggs, Other Dairy"))
                 .when()
-                .get("https://api.spoonacular.com/recipes/716429/information");
+                .get("https://api.spoonacular.com/recipes/716429/information")
+                .then()
+                .spec(responseSpecification);
 
     }
     @Test
     void getRecieptMaxSugar(){
 
         given()
-                .queryParam("apiKey", getApiKey())
+                .spec(requestSpecification)
                 .queryParam("maxSugar", 0)
                 .expect()
                 .body("offset",  equalTo(0))
                 .body("number",  equalTo(10))
                 .body("totalResults", equalTo(0))
                 .when()
-                .get(getBaseUrl() + complex);
+                .get(getBaseUrl() + complex)
+                .then()
+                .spec(responseSpecification);
 
     }
 
     @Test
     void getRecieptNoAutorization() {
 
-        given()
-
+          given().spec(requestSpecificationNo)
                 .queryParam("ignorePantry", true)
                 .when()
                 .get(getBaseUrl() + complex)
                 .then()
-                .statusCode(401);
-
+                  .spec(responseSpecificationNo);
     }
     @Test
     void getPostRequestBurger() {
 
         given()
-                .queryParam("apiKey", getApiKey())
+                .spec(requestSpecification)
                 .contentType("application/x-www-form-urlencoded")
                 .formParam("title","burger")
                 .expect()
@@ -105,13 +128,13 @@ public class HomeWorkTest extends AbstractTest {
                 .when()
                 .post(getBaseUrl()+cuisine)
                 .then()
-                .statusCode(200);
+                .spec(responseSpecification);
 }
     @Test
     void getPostRequestSushi() {
 
         given()
-                .queryParam("apiKey", getApiKey())
+                .spec(requestSpecification)
                 .contentType("application/x-www-form-urlencoded")
                 .formParam("title","sushi")
                 .expect()
@@ -119,8 +142,7 @@ public class HomeWorkTest extends AbstractTest {
                 .when()
                 .post(getBaseUrl()+cuisine)
                 .then()
-                .statusCode(200)
-                .header("Connection", "keep-alive");
+                .spec(responseSpecification);
 
     }
 
@@ -128,17 +150,16 @@ public class HomeWorkTest extends AbstractTest {
     void getPostRequestPizza() {
 
         given()
-                .queryParam("apiKey", getApiKey())
+                .spec(requestSpecification)
                 .contentType("application/x-www-form-urlencoded")
                 .formParam("title","pizza")
                 .expect()
-                .body("cuisine",  equalTo("Italian"))
+                .body("cuisine",  equalTo("Mediterranean"))
                 .body("confidence",  equalTo(0.95F))
                 .when()
                 .post(getBaseUrl()+cuisine)
                 .then()
-                .statusCode(200)
-                .header("Connection", "keep-alive");
+                .spec(responseSpecification);
 
     }
 
@@ -147,14 +168,14 @@ public class HomeWorkTest extends AbstractTest {
     void getPostRequestIngredientList() {
 
         given()
-                .queryParam("apiKey", getApiKey())
+                .spec(requestSpecification)
                 .contentType("application/x-www-form-urlencoded")
                 .formParam("ingredientList","garlic")
                 .expect()
                 .when()
                 .post(getBaseUrl()+cuisine)
                 .then()
-                .statusCode(200)
+                .spec(responseSpecification)
                 .header("Connection", "keep-alive")
         .header("Server","cloudflare");
 
@@ -162,18 +183,20 @@ public class HomeWorkTest extends AbstractTest {
     @Test
     void getPostRequestSushiNoAutorization() {
 
-        given()
-                .queryParam("apiKey", getApiKey()+"434")
+        given().
+                spec(requestSpecificationNo)
                 .contentType("application/x-www-form-urlencoded")
                 .formParam("title","sushi")
                 .expect()
                 .when()
                 .post(getBaseUrl()+cuisine)
                 .then()
-                .statusCode(401)
-                .header("Connection", "keep-alive");
+                .spec(responseSpecificationNo);
 
     }
+
+
+
 
 }
 
