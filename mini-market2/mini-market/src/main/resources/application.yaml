@@ -1,0 +1,15 @@
+server:
+  port: 8189
+  servlet:
+    context-path: /market
+spring:
+  flyway:
+    enabled: false
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://127.0.0.1:5433/postgres
+    username: postgres
+    password: 1
+  jpa:
+    show-sql: true
+
